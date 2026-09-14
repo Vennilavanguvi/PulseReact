@@ -1,0 +1,45 @@
+-- Pulse: schema for a chronological social-posts feed
+CREATE DATABASE IF NOT EXISTS trending_app
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE trending_app;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(30) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  display_name VARCHAR(60) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS posts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  content VARCHAR(500) NOT NULL,
+  like_count INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_posts_created_at (created_at DESC, id DESC)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS hashtags (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tag VARCHAR(60) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS post_hashtags (
+  post_id BIGINT NOT NULL,
+  hashtag_id INT NOT NULL,
+  PRIMARY KEY (post_id, hashtag_id),
+  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (hashtag_id) REFERENCES hashtags(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS likes (
+  user_id INT NOT NULL,
+  post_id BIGINT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, post_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
